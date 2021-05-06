@@ -65,8 +65,7 @@
 <!-- badges: start -->
 
 <p>The goal of pwiser is to make applying arbitrary functions across combinations of columns within <a href="https://dplyr.tidyverse.org">dplyr</a> easy. Currently, the only function is <code><a href="reference/pairwise.html">pairwise()</a></code>, which applies a function to all pairs of columns.</p>
-<p><code><a href="reference/pairwise.html">pairwise()</a></code> is meant to be used within <code><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate()</a></code> and <code><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise()</a></code> verbs. It is largely inspired by <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across()</a></code>.</p>
-<p>pwiser sprang from conversations on the Rstudio Community thread and related conversations: <a href="https://community.rstudio.com/t/pairwise-function-for-use-within-dplyr-mutate-and-dplyr-summarise/94684">pairwise() function for use within dplyr::mutate() and dplyr::summarise()</a>.</p>
+<p><code><a href="reference/pairwise.html">pairwise()</a></code> is meant to be used within <code><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate()</a></code> / <code><a href="https://dplyr.tidyverse.org/reference/mutate.html">transmute()</a></code> and <code><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise()</a></code> verbs. It is largely inspired by <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across()</a></code>. pwiser sprang from conversations on the Rstudio Community thread: <a href="https://community.rstudio.com/t/pairwise-function-for-use-within-dplyr-mutate-and-dplyr-summarise/94684">pairwise() function for use within dplyr::mutate() and dplyr::summarise()</a> and related conversations.</p>
 <div id="example-within-summarise" class="section level2">
 <h2 class="hasAnchor">
 <a href="#example-within-summarise" class="anchor"></a>Example within <code>summarise()</code>
@@ -77,7 +76,7 @@
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://allisonhorst.github.io/palmerpenguins/">palmerpenguins</a></span><span class="op">)</span>
 
 <span class="va">penguins</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/na.fail.html">na.omit</a></span><span class="op">(</span><span class="va">penguins</span><span class="op">)</span></code></pre></div>
-<p>Example testing within-group correlations across columns of interest:</p>
+<p><code><a href="reference/pairwise.html">pairwise()</a></code> respects grouped dataframes:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">cor_p_value</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span><span class="op">{</span>
   <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/cor.test.html">cor.test</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span><span class="op">$</span><span class="va">p.value</span>
@@ -94,14 +93,14 @@
 <span class="co">#&gt; 2 Chinstr~             1.53e- 9              4.92e- 5             2.16e- 7    68</span>
 <span class="co">#&gt; 3 Gentoo               7.34e-16              1.80e-16             1.40e-19   119</span></code></pre></div>
 <p>Setting <code>.is_commutative = TRUE</code> can save time on redundant calculations.</p>
-<p>When using <code><a href="reference/pairwise.html">pairwise()</a></code> within <code><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise()</a></code> the function(s) we apply should have an output length of 1. (Though can still output list-columns e.g. could replace <code>cor_p_value</code> above with the lambda function <code>~list(stats::cor.test(.x, .y))</code> if we wanted to keep entire output from <code><a href="https://rdrr.io/r/stats/cor.test.html">cor.test()</a></code>).</p>
+<p>When using <code><a href="reference/pairwise.html">pairwise()</a></code> within <code><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise()</a></code> the function(s) applied should have an output length of 1. (Though can still output list-columns e.g. could replace <code>cor_p_value</code> above with the lambda function <code>~list(stats::cor.test(.x, .y))</code> if we wanted to keep entire all outputs from <code><a href="https://rdrr.io/r/stats/cor.test.html">cor.test()</a></code>).</p>
 <!-- You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/master/examples>. -->
 </div>
 <div id="example-within-mutate" class="section level2">
 <h2 class="hasAnchor">
 <a href="#example-within-mutate" class="anchor"></a>Example within <code>mutate()</code>
 </h2>
-<p>Example getting ratios and differences of different columns:</p>
+<p>Can apply multiple functions via a named list (like how is done in <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across()</a></code>):</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">penguins</span> <span class="op">%&gt;%</span> 
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span><span class="fu"><a href="reference/pairwise.html">pairwise</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html">contains</a></span><span class="op">(</span><span class="st">"_mm"</span><span class="op">)</span>, 
@@ -130,7 +129,7 @@
 <span class="co">#&gt; $ features_difference_flipper_length_mm_bill_length_mm &lt;dbl&gt; 141.9, 146.5, 154~</span>
 <span class="co">#&gt; $ features_ratio_flipper_length_mm_bill_depth_mm       &lt;dbl&gt; 9.679144, 10.6896~</span>
 <span class="co">#&gt; $ features_difference_flipper_length_mm_bill_depth_mm  &lt;dbl&gt; 162.3, 168.6, 177~</span></code></pre></div>
-<p><code>.names</code> can be used to customize naming convention.</p>
+<p>Can use <code>.names</code> to customize outputted column names (only specify <code>{.fn}</code> when <code>.fns</code> argument is a named list).</p>
 </div>
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
@@ -143,15 +142,15 @@
 <div id="see-also" class="section level2">
 <h2 class="hasAnchor">
 <a href="#see-also" class="anchor"></a>See Also</h2>
-<p>There are a variety of other tools in R set-up for doing tidy pairwise operations. <a href="https://github.com/dgrtwo/widyr">widyr</a> and the excellent <a href="https://github.com/tidymodels/corrr">corrr</a> package (which is within the <code>tidymodels</code> suite) offer solutions (primarily) for summarising contexts (<code><a href="https://corrr.tidymodels.org/reference/colpair_map.html">corrr::colpair_map()</a></code> is the closest comparison as it also supports arbitrary functions). <code><a href="https://recipes.tidymodels.org/reference/step_ratio.html">recipes::step_ratio()</a></code> and <code><a href="https://recipes.tidymodels.org/reference/step_interact.html">recipes::step_interact()</a></code> can be used for making pairwise products or ratios in mutating contexts. I cataloged my tweeted on these approaches in the Appendix section of a post on <a href="https://www.bryanshalloway.com/2020/06/03/tidy-2-way-column-combinations/#tweets">Tidy Pairwise Operations</a>.</p>
-<p>The novelty of <code><a href="reference/pairwise.html">pwiser::pairwise()</a></code> is its integration in both mutating and summarising contexts.</p>
+<p>There are other tools in R for doing tidy pairwise operations. <a href="https://github.com/dgrtwo/widyr">widyr</a> (by David Robinson) and the excellent <a href="https://github.com/tidymodels/corrr">corrr</a> package (in the <code>tidymodels</code> suite) offer solutions (primarily) for summarising contexts (<code><a href="https://corrr.tidymodels.org/reference/colpair_map.html">corrr::colpair_map()</a></code> is the closest comparison as it also supports arbitrary functions). <code><a href="https://recipes.tidymodels.org/reference/step_ratio.html">recipes::step_ratio()</a></code> and <code><a href="https://recipes.tidymodels.org/reference/step_interact.html">recipes::step_interact()</a></code> can be used for making pairwise products or ratios in mutating contexts.(See Appendix section of post on <a href="https://www.bryanshalloway.com/2020/06/03/tidy-2-way-column-combinations/#tweets">Tidy Pairwise Operations</a> for a few cataloged tweets on these approaches.)</p>
+<p>The novelty of <code><a href="reference/pairwise.html">pwiser::pairwise()</a></code> is its integration in both mutating and summarising verbs in <code>dplyr</code>.</p>
 </div>
 <div id="computation-speed" class="section level2">
 <h2 class="hasAnchor">
 <a href="#computation-speed" class="anchor"></a>Computation Speed</h2>
 <p><em>For problems with lots of data you should use more efficient approaches.</em></p>
 <p>Matrix operations (as opposed to using dataframes) are much more computationally efficient for problems involving combinations (which can get big very quickly). We’ve done nothing to optimize the computation of functions run through pwiser.</p>
-<p>For example, when calculating pearson correlations, <code><a href="reference/pairwise.html">pairwise()</a></code> calculates the correlation <em>separately</em> for each pair, whereas something like <code><a href="https://rdrr.io/r/stats/cor.html">stats::cor()</a></code> (or <code><a href="https://corrr.tidymodels.org/reference/correlate.html">corrr::correlate()</a></code> which I believe calls <code><a href="https://rdrr.io/r/stats/cor.html">cor()</a></code> under the hood) does this in a single matrix operation.</p>
+<p>For example, when calculating pearson correlations, <code><a href="reference/pairwise.html">pairwise()</a></code> calculates the correlation <em>separately</em> for each pair, whereas <code><a href="https://rdrr.io/r/stats/cor.html">stats::cor()</a></code> (or <code><a href="https://corrr.tidymodels.org/reference/correlate.html">corrr::correlate()</a></code> which I believe calls <code><a href="https://rdrr.io/r/stats/cor.html">cor()</a></code> under the hood) uses R’s matrix operations to calculate all correlations simultaneously.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://modeldata.tidymodels.org">modeldata</a></span><span class="op">)</span>
 
@@ -160,7 +159,7 @@
 
 <span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">cells_numeric</span><span class="op">)</span>
 <span class="co">#&gt; [1] 2019   56</span></code></pre></div>
-<p>Let’s do a speed test using the numeric columns from the <code>cells</code> dataset, which represents 56 columns (which means 1540 pairwise combinations or 3080 permutations).</p>
+<p>Let’s do a speed test using the 56 numeric columns from the <code>cells</code> dataset (which means 1540 pairwise combinations or 3080 permutations).</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span>
 
@@ -172,12 +171,12 @@
   times <span class="op">=</span> <span class="fl">10L</span>,
   unit <span class="op">=</span> <span class="st">"ms"</span><span class="op">)</span>
 <span class="co">#&gt; Unit: milliseconds</span>
-<span class="co">#&gt;         expr      min       lq      mean    median       uq      max neval cld</span>
-<span class="co">#&gt;          cor   4.8397   5.0758   5.61568   5.21085   5.4844   8.8097    10 a  </span>
-<span class="co">#&gt;    correlate  38.6616  40.1653  42.61355  42.15355  44.0626  49.1295    10 a  </span>
-<span class="co">#&gt;  colpair_map 674.5807 742.1678 770.20548 776.65995 795.2870 920.0108    10   c</span>
-<span class="co">#&gt;     pairwise 210.2982 221.6134 241.99776 232.04795 260.3040 310.0799    10  b</span></code></pre></div>
-<p>The <code><a href="https://rdrr.io/r/stats/cor.html">stats::cor()</a></code> and <code><a href="https://corrr.tidymodels.org/reference/correlate.html">corrr::correlate()</a></code> approaches are many times faster than using <code><a href="reference/pairwise.html">pairwise()</a></code>. However <code><a href="reference/pairwise.html">pairwise()</a></code> still only takes roughly one fifth of a second to calculate 1540 correlations in this case (so on relatively constrained problems is still quite usable).</p>
+<span class="co">#&gt;         expr      min       lq      mean   median       uq      max neval cld</span>
+<span class="co">#&gt;          cor   5.0771   5.2004   5.40089   5.3009   5.4683   6.4089    10 a  </span>
+<span class="co">#&gt;    correlate  38.7910  38.9876  40.44573  39.8588  41.2525  43.4681    10 a  </span>
+<span class="co">#&gt;  colpair_map 686.6103 709.2951 767.89003 755.6631 817.1100 911.2684    10   c</span>
+<span class="co">#&gt;     pairwise 213.4525 221.2016 237.17620 233.3213 247.9332 283.2378    10  b</span></code></pre></div>
+<p>The <code><a href="https://rdrr.io/r/stats/cor.html">stats::cor()</a></code> and <code><a href="https://corrr.tidymodels.org/reference/correlate.html">corrr::correlate()</a></code> approaches are many times faster than using <code><a href="reference/pairwise.html">pairwise()</a></code>. However <code><a href="reference/pairwise.html">pairwise()</a></code> only takes roughly one fifth of a second to calculate 1540 correlations in this case (so on relatively constrained problems is still quite usable).</p>
 <p><code><a href="reference/pairwise.html">pairwise()</a></code> seems to be faster than <code><a href="https://corrr.tidymodels.org/reference/colpair_map.html">corrr::colpair_map()</a></code> (a more apples-to-apples comparison as both handle arbitrary functions), though much of this speed difference goes away when <code>.is_commutative = FALSE</code>.</p>
 </div>
 </div>

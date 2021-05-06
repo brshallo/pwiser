@@ -31,9 +31,14 @@ respectively.}
 
 \item{...}{Additional arguments for the function calls in \code{.fns}.}
 
-\item{.names}{A glue specification that describes how to name the output For
-pairwise, it can use \code{{.col_x}} and \code{{.col_y}} for the columns that gets
-passed and uses the following format with multiple \code{.fns}:
+\item{.names}{A glue specification that describes how to name the outputted
+columns. Use \code{{.col_x}} and \code{{.col_y}} to specify inputted column names and
+\code{{.fn}} to specify function name when \code{.fns} is a named list.
+
+Default format when \code{.fns} is not a named list is:
+\code{"{.col_x}_{.col_y}_{.fn}"}
+
+When \code{.fns} is a named list default format is:
 \code{"{.col_x}_{.col_y}_{.fn}"}}
 
 \item{.is_commutative}{If \code{TRUE}, only create new column for

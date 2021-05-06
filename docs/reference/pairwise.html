@@ -154,9 +154,12 @@ respectively.</p></td>
     </tr>
     <tr>
       <th>.names</th>
-      <td><p>A glue specification that describes how to name the output For
-pairwise, it can use <code>{.col_x}</code> and <code>{.col_y}</code> for the columns that gets
-passed and uses the following format with multiple <code>.fns</code>:
+      <td><p>A glue specification that describes how to name the outputted
+columns. Use <code>{.col_x}</code> and <code>{.col_y}</code> to specify inputted column names and
+<code>{.fn}</code> to specify function name when <code>.fns</code> is a named list.</p>
+<p>Default format when <code>.fns</code> is not a named list is:
+<code>"{.col_x}_{.col_y}_{.fn}"</code></p>
+<p>When <code>.fns</code> is a named list default format is:
 <code>"{.col_x}_{.col_y}_{.fn}"</code></p></td>
     </tr>
     <tr>

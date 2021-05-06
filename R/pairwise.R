@@ -156,9 +156,14 @@ pairwise_setup <- function(cols, fns, names, key, .caller_env, is_commutative) {
 #'   respectively.
 #'
 #' @param ... Additional arguments for the function calls in `.fns`.
-#' @param .names A glue specification that describes how to name the output For
-#'   pairwise, it can use `{.col_x}` and `{.col_y}` for the columns that gets
-#'   passed and uses the following format with multiple `.fns`:
+#' @param .names A glue specification that describes how to name the outputted
+#'   columns. Use `{.col_x}` and `{.col_y}` to specify inputted column names and
+#'   `{.fn}` to specify function name when `.fns` is a named list.
+#'
+#'   Default format when `.fns` is not a named list is:
+#'   `"{.col_x}_{.col_y}_{.fn}"`
+#'
+#'   When `.fns` is a named list default format is:
 #'   `"{.col_x}_{.col_y}_{.fn}"`
 #'
 #' @param .is_commutative If `TRUE`, only create new column for
