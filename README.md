@@ -118,14 +118,14 @@ devtools::install_github("brshallo/pwiser")
 ## See Also
 
 There are other tools in R for doing tidy pairwise operations.
-[widyr](https://github.com/dgrtwo/widyr) (by David Robinson) and the
-excellent [corrr](https://github.com/tidymodels/corrr) package (in the
-`tidymodels` suite) offer solutions (primarily) for summarising contexts
+[widyr](https://github.com/dgrtwo/widyr) (by David Robinson) and
+[corrr](https://github.com/tidymodels/corrr) (in the `tidymodels` suite)
+offer solutions (primarily) for summarising contexts
 (`corrr::colpair_map()` is the closest comparison as it also supports
 arbitrary functions). `recipes::step_ratio()` and
 `recipes::step_interact()` can be used for making pairwise products or
-ratios in mutating contexts.(See Appendix section of post on [Tidy
-Pairwise
+ratios in mutating contexts. (See Appendix section of prior blog post on
+[Tidy Pairwise
 Operations](https://www.bryanshalloway.com/2020/06/03/tidy-2-way-column-combinations/#tweets)
 for a few cataloged tweets on these approaches.)
 
@@ -173,11 +173,16 @@ microbenchmark::microbenchmark(
   times = 10L,
   unit = "ms")
 #> Unit: milliseconds
-#>         expr      min       lq      mean    median       uq      max neval cld
-#>          cor   5.0002   5.4794   5.70830   5.73585   6.0144   6.2270    10 a  
-#>    correlate  42.0293  43.3943  48.43068  46.56445  55.3267  57.1252    10 a  
-#>  colpair_map 715.4732 769.1273 802.64916 786.22945 841.2853 966.8648    10   c
-#>     pairwise 237.4504 257.2560 280.79641 277.19255 299.5072 357.6720    10  b
+#>         expr      min       lq       mean    median        uq       max neval
+#>          cor   4.9390   5.4155    6.59767   6.23110    7.1104   10.0226    10
+#>    correlate  42.0968  42.4645   56.14318  53.70095   67.0191   77.7793    10
+#>  colpair_map 786.2960 833.6539 1119.77656 844.24510 1177.1455 2314.8609    10
+#>     pairwise 255.8610 266.7864  321.14781 300.37675  345.9385  495.8805    10
+#>  cld
+#>   a 
+#>   a 
+#>    b
+#>   a
 ```
 
 The `stats::cor()` and `corrr::correlate()` approaches are many times

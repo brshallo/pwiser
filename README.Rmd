@@ -90,7 +90,7 @@ devtools::install_github("brshallo/pwiser")
 
 ## See Also
 
-There are other tools in R for doing tidy pairwise operations. [widyr](https://github.com/dgrtwo/widyr) (by David Robinson) and the excellent [corrr](https://github.com/tidymodels/corrr) package (in the `tidymodels` suite) offer solutions (primarily) for summarising contexts (`corrr::colpair_map()` is the closest comparison as it also supports arbitrary functions). `recipes::step_ratio()` and `recipes::step_interact()` can be used for making pairwise products or ratios in mutating contexts.(See Appendix section of post on [Tidy Pairwise Operations](https://www.bryanshalloway.com/2020/06/03/tidy-2-way-column-combinations/#tweets) for a few cataloged tweets on these approaches.)
+There are other tools in R for doing tidy pairwise operations. [widyr](https://github.com/dgrtwo/widyr) (by David Robinson) and [corrr](https://github.com/tidymodels/corrr) (in the `tidymodels` suite) offer solutions (primarily) for summarising contexts (`corrr::colpair_map()` is the closest comparison as it also supports arbitrary functions). `recipes::step_ratio()` and `recipes::step_interact()` can be used for making pairwise products or ratios in mutating contexts. (See Appendix section of prior blog post on [Tidy Pairwise Operations](https://www.bryanshalloway.com/2020/06/03/tidy-2-way-column-combinations/#tweets) for a few cataloged tweets on these approaches.)
 
 The novelty of `pwiser::pairwise()` is its integration in both mutating and summarising verbs in `{dplyr}`.
 
