@@ -14,11 +14,10 @@ combinations of columns within `{dplyr}` easy. Currently, the only
 function is `pairwise()`, which applies a function to all pairs of
 columns.
 
-`pairwise()` is meant to be used within `mutate()` / `transmute()` and
-`summarise()` verbs. It is largely inspired by `dplyr::across()`. pwiser
-sprang from conversations on the Rstudio Community thread: [pairwise()
-function for use within dplyr::mutate() and
-dplyr::summarise()](https://community.rstudio.com/t/pairwise-function-for-use-within-dplyr-mutate-and-dplyr-summarise/94684)
+`pairwise()` is an altered version of `dplyr::across()` and, similarly,
+is meant to be used within `mutate()` / `transmute()` and `summarise()`
+verbs. pwiser sprang from conversations on an [Rstudio Community
+thread](https://community.rstudio.com/t/pairwise-function-for-use-within-dplyr-mutate-and-dplyr-summarise/94684)
 and related conversations.
 
 ## Example within `summarise()`
@@ -34,13 +33,17 @@ penguins <- na.omit(penguins)
 `pairwise()` respects grouped dataframes:
 
 ``` r
+# When using `pairwise()` within `summarise()` the function(s) applied should
+# have an output length of 1 (for each group). (Though could wrap in `list()` to make a list column output.)
 cor_p_value <- function(x, y){
   stats::cor.test(x, y)$p.value
 }
 
 penguins %>% 
   group_by(species) %>% 
-  summarise(pairwise(contains("_mm"), cor_p_value, .is_commutative = TRUE),
+  summarise(pairwise(contains("_mm"), 
+                     cor_p_value, 
+                     .is_commutative = TRUE),
             n = n())
 #> # A tibble: 3 x 5
 #>   species  bill_length_mm_bill~ bill_length_mm_flipp~ bill_depth_mm_flipp~     n
@@ -53,18 +56,23 @@ penguins %>%
 Setting `.is_commutative = TRUE` can save time on redundant
 calculations.
 
-When using `pairwise()` within `summarise()` the function(s) applied
-should have an output length of 1. (Though can still output list-columns
-e.g. could replace `cor_p_value` above with the lambda function
-`~list(stats::cor.test(.x, .y))` if we wanted to keep entire all outputs
-from `cor.test()`).
+Equivalently, could have written with `.x` and `.y` in a lambda
+function:
+
+``` r
+penguins %>% 
+  group_by(species) %>% 
+  summarise(pairwise(contains("_mm"), 
+                     ~stats::cor.test(.x, .y)$p.value, 
+                     .is_commutative = TRUE),
+            n = n())
+```
 
 <!-- You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/master/examples>. -->
 
 ## Example within `mutate()`
 
-Can apply multiple functions via a named list (like how is done in
-`dplyr::across()`):
+Can apply multiple functions via a named list:
 
 ``` r
 penguins %>% 
@@ -96,8 +104,7 @@ penguins %>%
 #> $ features_difference_flipper_length_mm_bill_depth_mm  <dbl> 162.3, 168.6, 177~
 ```
 
-Can use `.names` to customize outputted column names (only specify
-`{.fn}` when `.fns` argument is a named list).
+Can use `.names` to customize outputted column names.
 
 ## Installation
 
@@ -123,22 +130,22 @@ Operations](https://www.bryanshalloway.com/2020/06/03/tidy-2-way-column-combinat
 for a few cataloged tweets on these approaches.)
 
 The novelty of `pwiser::pairwise()` is its integration in both mutating
-and summarising verbs in `dplyr`.
+and summarising verbs in `{dplyr}`.
 
 ## Computation Speed
 
 *For problems with lots of data you should use more efficient
 approaches.*
 
-Matrix operations (as opposed to using dataframes) are much more
-computationally efficient for problems involving combinations (which can
-get big very quickly). We’ve done nothing to optimize the computation of
-functions run through pwiser.
+Matrix operations (compared to dataframes) are much more computationally
+efficient for problems involving combinations (which can get big very
+quickly). We’ve done nothing to optimize the computation of functions
+run through pwiser.
 
 For example, when calculating pearson correlations, `pairwise()`
 calculates the correlation *separately* for each pair, whereas
-`stats::cor()` (or `corrr::correlate()` which I believe calls `cor()`
-under the hood) uses R’s matrix operations to calculate all correlations
+`stats::cor()` (or `corrr::correlate()` which calls `cor()` under the
+hood) uses R’s matrix operations to calculate all correlations
 simultaneously.
 
 ``` r
@@ -152,7 +159,8 @@ dim(cells_numeric)
 ```
 
 Let’s do a speed test using the 56 numeric columns from the `cells`
-dataset (which means 1540 pairwise combinations or 3080 permutations).
+dataset (which means 1540 pairwise combinations or 3080 permutations)
+imported from `{modeltime}`.
 
 ``` r
 set.seed(123)
@@ -165,18 +173,21 @@ microbenchmark::microbenchmark(
   times = 10L,
   unit = "ms")
 #> Unit: milliseconds
-#>         expr      min       lq      mean   median       uq      max neval cld
-#>          cor   5.0771   5.2004   5.40089   5.3009   5.4683   6.4089    10 a  
-#>    correlate  38.7910  38.9876  40.44573  39.8588  41.2525  43.4681    10 a  
-#>  colpair_map 686.6103 709.2951 767.89003 755.6631 817.1100 911.2684    10   c
-#>     pairwise 213.4525 221.2016 237.17620 233.3213 247.9332 283.2378    10  b
+#>         expr      min       lq      mean    median       uq      max neval cld
+#>          cor   5.0002   5.4794   5.70830   5.73585   6.0144   6.2270    10 a  
+#>    correlate  42.0293  43.3943  48.43068  46.56445  55.3267  57.1252    10 a  
+#>  colpair_map 715.4732 769.1273 802.64916 786.22945 841.2853 966.8648    10   c
+#>     pairwise 237.4504 257.2560 280.79641 277.19255 299.5072 357.6720    10  b
 ```
 
 The `stats::cor()` and `corrr::correlate()` approaches are many times
-faster than using `pairwise()`. However `pairwise()` only takes roughly
-one fifth of a second to calculate 1540 correlations in this case (so on
-relatively constrained problems is still quite usable).
+faster than using `pairwise()`. However `pairwise()` still only takes
+about one fifth of a second to calculate 1540 correlations in this case.
+Hence on relatively constrained problems pairwise() is still quite
+usable. (Though there are many cases where you should go for a matrix
+based solution.)
 
 `pairwise()` seems to be faster than `corrr::colpair_map()` (a more
-apples-to-apples comparison as both handle arbitrary functions), though
-much of this speed difference goes away when `.is_commutative = FALSE`.
+apples-to-apples comparison as both can handle arbitrary functions),
+though much of this speed difference goes away when
+`.is_commutative = FALSE`.
