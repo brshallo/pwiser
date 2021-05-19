@@ -209,7 +209,7 @@ pairwise_setup <- function(cols, fns, names, key, .caller_env, is_commutative) {
 #'                   .names = "features_{.fn}_{.col_x}_{.col_y}"),
 #'          n = n()) %>%
 #'   glimpse()
-pairwise <- function(.cols = everything(), .fns = NULL, ..., .names = NULL, .is_commutative = FALSE) {
+pairwise <- function(.cols = everything(), .fns = NULL, ..., .names = NULL, .is_commutative = FALSE, .do_parallel = FALSE) {
   key <- key_deparse(sys.call())
   setup <- pairwise_setup({{ .cols }}, fns = .fns, names = .names, key = key, .caller_env = caller_env(), is_commutative = .is_commutative)
 
@@ -247,8 +247,6 @@ pairwise <- function(.cols = everything(), .fns = NULL, ..., .names = NULL, .is_
   seq_n_cols <- seq_len(n_cols)
   seq_fns <- seq_len(n_fns)
 
-  k <- 1L
-  out <- vector("list", total_pairwise_cols * n_fns)
 
   # Reset `cur_column()` info on exit
   old_var <- context_peek_bare("column")
@@ -256,25 +254,51 @@ pairwise <- function(.cols = everything(), .fns = NULL, ..., .names = NULL, .is_
 
   # Loop in such an order that all functions are applied
   # to a single column before moving on to the next column
-  for (i in seq_n_cols) {
-    for (h in seq_n_cols) {
-      if (.is_commutative & h <= i) next
-      if (i == h) next
-      var_x <- vars[[i]]
-      var_y <- vars[[h]]
+  if (.do_parallel & require(furrr)) {
+    plan(multisession, workers = max(1,availableCores()-1))
+    k <- 1L
+    # prep combos
+    cols_to_compute <- vector("list", total_pairwise_cols * n_fns)
+    for (i in seq_n_cols) {
+      for (h in seq_n_cols) {
+        if (.is_commutative & h <= i) next
+        if (i == h) next
+        for (j in seq_fns) {
+          cols_to_compute[[k]] <- list(i=data[[i]], h=data[[h]], j=fns[[j]])
+          k <- k + 1L
+        }
+      }
+    }
 
-      col_x <- data[[i]]
-      col_y <- data[[h]]
+    out <- future_map(cols_to_compute, function(inputs) {
+      fn <- inputs$j
+      return(fn(inputs$i, inputs$h, ...))
+    })
 
-      context_poke("column", var_x)
+  } else {
+    out <- vector("list", total_pairwise_cols * n_fns)
+    k <- 1L
+    for (i in seq_n_cols) {
+      for (h in seq_n_cols) {
+        if (.is_commutative & h <= i) next
+        if (i == h) next
+        var_x <- vars[[i]]
+        var_y <- vars[[h]]
 
-      for (j in seq_fns) {
-        fn <- fns[[j]]
-        out[[k]] <- fn(col_x, col_y, ...)
-        k <- k + 1L
+        col_x <- data[[i]]
+        col_y <- data[[h]]
+
+        context_poke("column", var_x)
+
+        for (j in seq_fns) {
+          fn <- fns[[j]]
+          out[[k]] <- fn(col_x, col_y, ...)
+          k <- k + 1L
+        }
       }
     }
   }
+
 
   size <- vec_size_common(!!!out)
   out <- vec_recycle_common(!!!out, .size = size)

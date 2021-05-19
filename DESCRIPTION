@@ -26,7 +26,8 @@ Imports:
     vctrs (>= 0.3.5), 
     pillar (>= 1.5.1),
     dplyr (>= 0.8.3),
-    purrr
+    purrr,
+    furrr
 Suggests: 
     bench,
     broom,
