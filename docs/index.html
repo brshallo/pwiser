@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">pwiser</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.1.9000</span>
       </span>
     </div>
 
@@ -66,6 +66,7 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
+
 <div id="pwiser" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#pwiser" class="anchor"></a>pwiser</h1></div>
@@ -162,6 +163,8 @@
 <a href="#see-also" class="anchor"></a>See Also</h2>
 <p>There are other tools in R for doing tidy pairwise operations. <a href="https://github.com/dgrtwo/widyr">widyr</a> (by David Robinson) and <a href="https://github.com/tidymodels/corrr">corrr</a> (in the <code>tidymodels</code> suite) offer solutions (primarily) for summarising contexts (<code><a href="https://corrr.tidymodels.org/reference/colpair_map.html">corrr::colpair_map()</a></code> is the closest comparison as it also supports arbitrary functions). <code><a href="https://recipes.tidymodels.org/reference/step_ratio.html">recipes::step_ratio()</a></code> and <code><a href="https://recipes.tidymodels.org/reference/step_interact.html">recipes::step_interact()</a></code> can be used for making pairwise products or ratios in mutating contexts. (See Appendix section of prior blog post on <a href="https://www.bryanshalloway.com/2020/06/03/tidy-2-way-column-combinations/#tweets">Tidy Pairwise Operations</a> for a few cataloged tweets on these approaches.)</p>
 <p>The novelty of <code><a href="reference/pairwise.html">pwiser::pairwise()</a></code> is its integration in both mutating and summarising verbs in <a href="https://dplyr.tidyverse.org">dplyr</a>.</p>
+<p><strong>Identified after publishing {pwiser}:</strong></p>
+<p>The <a href="https://github.com/TimTeaFan/dplyover">dplyover</a> package is a more mature package that also offers a wide range of extensions on <code><a href="https://dplyr.tidyverse.org/reference/across.html">across()</a></code> for iteration problems. <code><a href="https://rdrr.io/pkg/dplyover/man/over2.html">dplyover::over2x()</a></code> can be used to do essentially the same thing as <code><a href="reference/pairwise.html">pairwise()</a></code>. We are currently reviewing whether to mark {pwiser} as superseded so we can point people to {dplyover}.</p>
 </div>
 <div id="computation-speed" class="section level2">
 <h2 class="hasAnchor">
@@ -189,20 +192,21 @@
   times <span class="op">=</span> <span class="fl">10L</span>,
   unit <span class="op">=</span> <span class="st">"ms"</span><span class="op">)</span>
 <span class="co">#&gt; Unit: milliseconds</span>
-<span class="co">#&gt;         expr      min       lq       mean    median        uq       max neval</span>
-<span class="co">#&gt;          cor   4.9390   5.4155    6.59767   6.23110    7.1104   10.0226    10</span>
-<span class="co">#&gt;    correlate  42.0968  42.4645   56.14318  53.70095   67.0191   77.7793    10</span>
-<span class="co">#&gt;  colpair_map 786.2960 833.6539 1119.77656 844.24510 1177.1455 2314.8609    10</span>
-<span class="co">#&gt;     pairwise 255.8610 266.7864  321.14781 300.37675  345.9385  495.8805    10</span>
-<span class="co">#&gt;  cld</span>
-<span class="co">#&gt;   a </span>
-<span class="co">#&gt;   a </span>
-<span class="co">#&gt;    b</span>
-<span class="co">#&gt;   a</span></code></pre></div>
+<span class="co">#&gt;         expr      min       lq      mean    median       uq      max neval  cld</span>
+<span class="co">#&gt;          cor   5.2296   5.5658   6.01588   5.85185   6.2553   7.2560    10 a   </span>
+<span class="co">#&gt;    correlate  43.2178  45.2571  49.23176  47.46405  52.1339  62.1109    10  b  </span>
+<span class="co">#&gt;  colpair_map 655.3740 695.4097 729.78595 722.32390 737.7867 882.0173    10    d</span>
+<span class="co">#&gt;     pairwise 245.2783 264.9519 277.95506 271.93135 295.3673 319.9610    10   c</span></code></pre></div>
 <p>The <code><a href="https://rdrr.io/r/stats/cor.html">stats::cor()</a></code> and <code><a href="https://corrr.tidymodels.org/reference/correlate.html">corrr::correlate()</a></code> approaches are many times faster than using <code><a href="reference/pairwise.html">pairwise()</a></code>. However <code><a href="reference/pairwise.html">pairwise()</a></code> still only takes about one fifth of a second to calculate 1540 correlations in this case. Hence on relatively constrained problems pairwise() is still quite usable. (Though there are many cases where you should go for a matrix based solution.)</p>
 <p><code><a href="reference/pairwise.html">pairwise()</a></code> seems to be faster than <code><a href="https://corrr.tidymodels.org/reference/colpair_map.html">corrr::colpair_map()</a></code> (a more apples-to-apples comparison as both can handle arbitrary functions), though much of this speed difference goes away when <code>.is_commutative = FALSE</code>.</p>
 </div>
 </div>
+<div id="limitations" class="section level1">
+<h1 class="hasAnchor">
+<a href="#limitations" class="anchor"></a>Limitations</h1>
+<p>See issue <a href="https://github.com/brshallo/pwiser/issues/1">#1</a> for a little on limitations in current set-up.</p>
+</div>
+
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

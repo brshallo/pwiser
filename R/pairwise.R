@@ -1,16 +1,31 @@
 # import more intelligently, see: here:
 # https://github.com/ropensci-org/pkgreviewr/issues/3
 # https://stackoverflow.com/questions/32535773/using-un-exported-function-from-another-r-package
-key_deparse <- dplyr:::key_deparse
-peek_mask <- dplyr:::peek_mask
-context_peek_bare <- dplyr:::context_peek_bare
-context_poke <- dplyr:::context_poke
-data_mask_top <- dplyr:::data_mask_top
+
+# key_deparse <- dplyr:::key_deparse
+key_deparse <- function(key) {
+  deparse(key, width.cutoff = 500L, backtick = TRUE, nlines = 1L, control = NULL)
+}
+
+# data_mask_top <- dplyr:::data_mask_top
+data_mask_top <- function(env, recursive = FALSE, inherit = FALSE) {
+  while (env_has(env, ".__tidyeval_data_mask__.", inherit = inherit)) {
+    env <- env_parent(env_get(env, ".top_env", inherit = inherit))
+    if (!recursive) {
+      return(env)
+    }
+  }
+
+  env
+}
+
+# See R/context.R for other unexported functions copied in
 
 #### These functions are all essentially modified copies of dplyr::across() set-up
 
 ###
-pairwise_setup_impl <- function(cols, fns, names, .caller_env, is_commutative, mask = peek_mask("across()"), .top_level = FALSE) {
+# pairwise_setup_impl <- function(cols, fns, names, .caller_env, is_commutative, mask = peek_mask("across()"), .top_level = FALSE) {
+pairwise_setup_impl <- function(cols, fns, names, .caller_env, is_commutative, mask = peek_mask("pairwise()"), .top_level = FALSE) {
   cols <- enquo(cols)
 
   if (.top_level) {
@@ -73,7 +88,7 @@ pairwise_setup_impl <- function(cols, fns, names, .caller_env, is_commutative, m
   }
 
   if (!is.list(fns)) {
-    abort(c("Problem with `across()` input `.fns`.",
+    abort(c("Problem with `pairwise()` input `.fns`.",
             i = "Input `.fns` must be NULL, a function, a formula, or a list of functions/formulas."
     ))
   }
@@ -116,7 +131,7 @@ pairwise_glue_mask <- function(.col_x, .col_y, .fn, .caller_env) {
 
 ###
 pairwise_setup <- function(cols, fns, names, key, .caller_env, is_commutative) {
-  mask <- peek_mask("across()")
+  mask <- peek_mask("pairwise()")
   value <- mask$across_cache_get(key)
   if (is.null(value)) {
     value <- pairwise_setup_impl({{ cols }},

@@ -8,6 +8,14 @@
 \description{
 To learn more about pwiser see https://github.com/brshallo/pwiser
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/brshallo/pwiser}
+  \item Report bugs at \url{https://github.com/brshallo/pwiser/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Bryan Shalloway \email{brshallodev@gmail.com}
 
