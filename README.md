@@ -132,6 +132,15 @@ for a few cataloged tweets on these approaches.)
 The novelty of `pwiser::pairwise()` is its integration in both mutating
 and summarising verbs in `{dplyr}`.
 
+**Identified after publishing {pwiser}:**
+
+The [dplyover](https://github.com/TimTeaFan/dplyover) package is a more
+mature package that also offers a wide range of extensions on `across()`
+for iteration problems. `dplyover::over2x()` can be used to do
+essentially the same thing as `pairwise()`. We are currently reviewing
+whether to mark {pwiser} as superseded so we can point people to
+{dplyover}.
+
 ## Computation Speed
 
 *For problems with lots of data you should use more efficient
@@ -173,16 +182,11 @@ microbenchmark::microbenchmark(
   times = 10L,
   unit = "ms")
 #> Unit: milliseconds
-#>         expr      min       lq       mean    median        uq       max neval
-#>          cor   4.9390   5.4155    6.59767   6.23110    7.1104   10.0226    10
-#>    correlate  42.0968  42.4645   56.14318  53.70095   67.0191   77.7793    10
-#>  colpair_map 786.2960 833.6539 1119.77656 844.24510 1177.1455 2314.8609    10
-#>     pairwise 255.8610 266.7864  321.14781 300.37675  345.9385  495.8805    10
-#>  cld
-#>   a 
-#>   a 
-#>    b
-#>   a
+#>         expr      min       lq      mean    median       uq      max neval  cld
+#>          cor   5.2296   5.5658   6.01588   5.85185   6.2553   7.2560    10 a   
+#>    correlate  43.2178  45.2571  49.23176  47.46405  52.1339  62.1109    10  b  
+#>  colpair_map 655.3740 695.4097 729.78595 722.32390 737.7867 882.0173    10    d
+#>     pairwise 245.2783 264.9519 277.95506 271.93135 295.3673 319.9610    10   c
 ```
 
 The `stats::cor()` and `corrr::correlate()` approaches are many times
@@ -196,3 +200,8 @@ based solution.)
 apples-to-apples comparison as both can handle arbitrary functions),
 though much of this speed difference goes away when
 `.is_commutative = FALSE`.
+
+# Limitations
+
+See issue [\#1](https://github.com/brshallo/pwiser/issues/1) for a
+little on limitations in current set-up.
