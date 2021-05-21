@@ -96,7 +96,7 @@ The novelty of `pwiser::pairwise()` is its integration in both mutating and summ
 
 **Identified after publishing {pwiser}:**
 
-The [dplyover](https://github.com/TimTeaFan/dplyover) package is a more mature package that also offers a wide range of extensions on `across()` for iteration problems. `dplyover::over2x()` can be used to do essentially the same thing as `pairwise()`. We are currently reviewing whether to mark {pwiser} as superseded so we can point people to {dplyover}.
+The [dplyover](https://github.com/TimTeaFan/dplyover) package is a more mature package that also offers a wide range of extensions on `across()` for iteration problems. `dplyover::across2()` can be used to do essentially the same thing as `pairwise()`. We are currently reviewing whether to mark {pwiser} as superseded so we can point people to {dplyover}.
 
 ## Computation Speed
 
