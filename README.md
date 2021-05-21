@@ -136,7 +136,7 @@ and summarising verbs in `{dplyr}`.
 
 The [dplyover](https://github.com/TimTeaFan/dplyover) package is a more
 mature package that also offers a wide range of extensions on `across()`
-for iteration problems. `dplyover::over2x()` can be used to do
+for iteration problems. `dplyover::across2()` can be used to do
 essentially the same thing as `pairwise()`. We are currently reviewing
 whether to mark {pwiser} as superseded so we can point people to
 {dplyover}.
@@ -182,11 +182,16 @@ microbenchmark::microbenchmark(
   times = 10L,
   unit = "ms")
 #> Unit: milliseconds
-#>         expr      min       lq      mean    median       uq      max neval  cld
-#>          cor   5.2296   5.5658   6.01588   5.85185   6.2553   7.2560    10 a   
-#>    correlate  43.2178  45.2571  49.23176  47.46405  52.1339  62.1109    10  b  
-#>  colpair_map 655.3740 695.4097 729.78595 722.32390 737.7867 882.0173    10    d
-#>     pairwise 245.2783 264.9519 277.95506 271.93135 295.3673 319.9610    10   c
+#>         expr        min         lq       mean     median         uq        max
+#>          cor   5.224201   5.611702   6.074961   6.149051   6.331702   6.862901
+#>    correlate  41.888002  44.783101  49.197801  46.816001  48.088402  73.147801
+#>  colpair_map 653.476401 665.239601 694.533231 681.804551 698.149301 822.678301
+#>     pairwise 236.102701 253.147802 269.404431 268.679200 291.609801 300.210800
+#>  neval  cld
+#>     10 a   
+#>     10  b  
+#>     10    d
+#>     10   c
 ```
 
 The `stats::cor()` and `corrr::correlate()` approaches are many times
