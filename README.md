@@ -132,14 +132,15 @@ for a few cataloged tweets on these approaches.)
 The novelty of `pwiser::pairwise()` is its integration in both mutating
 and summarising verbs in `{dplyr}`.
 
-**Identified after publishing {pwiser}:**
+### `dplyover`
 
-The [dplyover](https://github.com/TimTeaFan/dplyover) package is a more
-mature package that also offers a wide range of extensions on `across()`
-for iteration problems. `dplyover::across2()` can be used to do
-essentially the same thing as `pairwise()`. We are currently reviewing
-whether to mark {pwiser} as superseded so we can point people to
-{dplyover}.
+The [dplyover](https://github.com/TimTeaFan/dplyover) package offers a
+wide range of extensions on `across()` for iteration problems (and was
+identified after sharing the initial version of `{pwiser}`).
+`dplyover::across2x()` can be used to do the same things as
+`pwiser::pairwise()`. As `{dplyover}` continues to mature its interface
+and improve its performance, we may eventually mark `{pwiser}` as
+superseded.
 
 ## Computation Speed
 
@@ -172,32 +173,39 @@ dataset (which means 1540 pairwise combinations or 3080 permutations)
 imported from `{modeltime}`.
 
 ``` r
+library(corrr)
+if (!requireNamespace("dplyover")) devtools::install_github('TimTeaFan/dplyover')
+library(dplyover)
+
 set.seed(123)
 
 microbenchmark::microbenchmark(
   cor = cor(cells_numeric),
-  correlate = corrr::correlate(cells_numeric),
-  colpair_map = corrr::colpair_map(cells_numeric, cor),
+  correlate = correlate(cells_numeric),
+  colpair_map = colpair_map(cells_numeric, cor),
   pairwise = summarise(cells_numeric, pairwise(where(is.numeric), cor, .is_commutative = TRUE)),
+  dplyover = summarise(cells_numeric, across2x(where(is.numeric), where(is.numeric), cor, .comb = "minimal")),
   times = 10L,
   unit = "ms")
 #> Unit: milliseconds
-#>         expr        min         lq       mean     median         uq        max
-#>          cor   5.224201   5.611702   6.074961   6.149051   6.331702   6.862901
-#>    correlate  41.888002  44.783101  49.197801  46.816001  48.088402  73.147801
-#>  colpair_map 653.476401 665.239601 694.533231 681.804551 698.149301 822.678301
-#>     pairwise 236.102701 253.147802 269.404431 268.679200 291.609801 300.210800
+#>         expr       min        lq       mean     median        uq       max
+#>          cor    5.0872    5.2673    6.04834    5.84305    6.7173    7.5421
+#>    correlate   40.2647   43.8159   47.96368   46.35755   50.4519   61.3870
+#>  colpair_map  609.4319  621.8832  675.88510  658.82900  673.0988  885.6218
+#>     pairwise  232.2557  239.8043  278.56514  256.20245  289.0009  439.8503
+#>     dplyover 1393.0210 1411.3117 1719.47016 1722.58500 1849.7877 2223.6372
 #>  neval  cld
 #>     10 a   
+#>     10 a   
+#>     10   c 
 #>     10  b  
 #>     10    d
-#>     10   c
 ```
 
 The `stats::cor()` and `corrr::correlate()` approaches are many times
 faster than using `pairwise()`. However `pairwise()` still only takes
 about one fifth of a second to calculate 1540 correlations in this case.
-Hence on relatively constrained problems pairwise() is still quite
+Hence on relatively constrained problems `pairwise()` is still quite
 usable. (Though there are many cases where you should go for a matrix
 based solution.)
 
@@ -206,7 +214,59 @@ apples-to-apples comparison as both can handle arbitrary functions),
 though much of this speed difference goes away when
 `.is_commutative = FALSE`.
 
+`pairwise()` (at the moment) seems to also be faster than running the
+equivalent operation with `dplyover::across2x()`.
+
+<details style="margin-bottom:10px;">
+<summary>
+Session info
+</summary>
+
+``` r
+sessionInfo()
+#> R version 3.5.1 (2018-07-02)
+#> Platform: x86_64-w64-mingw32/x64 (64-bit)
+#> Running under: Windows 10 x64 (build 19042)
+#> 
+#> Matrix products: default
+#> 
+#> locale:
+#> [1] LC_COLLATE=English_United States.1252 
+#> [2] LC_CTYPE=English_United States.1252   
+#> [3] LC_MONETARY=English_United States.1252
+#> [4] LC_NUMERIC=C                          
+#> [5] LC_TIME=English_United States.1252    
+#> 
+#> attached base packages:
+#> [1] stats     graphics  grDevices utils     datasets  methods   base     
+#> 
+#> other attached packages:
+#> [1] dplyover_0.0.8.9000  corrr_0.4.3          modeldata_0.1.0     
+#> [4] palmerpenguins_0.1.0 pwiser_0.0.1.9000    dplyr_1.0.6         
+#> 
+#> loaded via a namespace (and not attached):
+#>  [1] pillar_1.6.1         compiler_3.5.1       tools_3.5.1         
+#>  [4] digest_0.6.27        lattice_0.20-35      evaluate_0.14       
+#>  [7] lifecycle_1.0.0      tibble_3.1.2         gtable_0.3.0        
+#> [10] pkgconfig_2.0.3      rlang_0.4.11         Matrix_1.2-14       
+#> [13] DBI_1.1.1            cli_2.5.0            rstudioapi_0.13     
+#> [16] microbenchmark_1.4-7 yaml_2.2.1           mvtnorm_1.1-1       
+#> [19] xfun_0.23            stringr_1.4.0        knitr_1.33          
+#> [22] generics_0.1.0       vctrs_0.3.8          grid_3.5.1          
+#> [25] tidyselect_1.1.1     glue_1.4.2           R6_2.5.0            
+#> [28] fansi_0.5.0          survival_3.1-12      rmarkdown_2.8       
+#> [31] multcomp_1.4-17      TH.data_1.0-10       purrr_0.3.4         
+#> [34] ggplot2_3.3.3        magrittr_2.0.1       codetools_0.2-15    
+#> [37] MASS_7.3-50          splines_3.5.1        scales_1.1.1        
+#> [40] ellipsis_0.3.2       htmltools_0.5.1.1    assertthat_0.2.1    
+#> [43] colorspace_2.0-1     sandwich_3.0-1       utf8_1.2.1          
+#> [46] stringi_1.6.2        munsell_0.5.0        crayon_1.4.1        
+#> [49] zoo_1.8-9
+```
+
+</details>
+
 # Limitations
 
-See issue [\#1](https://github.com/brshallo/pwiser/issues/1) for a
-little on limitations in current set-up.
+See issue [\#1](https://github.com/brshallo/pwiser/issues/1) for notes
+on limitations in current set-up.

@@ -94,9 +94,9 @@ There are other tools in R for doing tidy pairwise operations. [widyr](https://g
 
 The novelty of `pwiser::pairwise()` is its integration in both mutating and summarising verbs in `{dplyr}`.
 
-**Identified after publishing {pwiser}:**
+### `dplyover`
 
-The [dplyover](https://github.com/TimTeaFan/dplyover) package is a more mature package that also offers a wide range of extensions on `across()` for iteration problems. `dplyover::across2()` can be used to do essentially the same thing as `pairwise()`. We are currently reviewing whether to mark {pwiser} as superseded so we can point people to {dplyover}.
+The [dplyover](https://github.com/TimTeaFan/dplyover) package offers a wide range of extensions on `across()` for iteration problems (and was identified after sharing the initial version of `{pwiser}`). `dplyover::across2x()` can be used to do the same things as `pwiser::pairwise()`. As `{dplyover}` continues to mature its interface and improve its performance, we may eventually mark `{pwiser}` as superseded.
 
 ## Computation Speed
 
@@ -118,21 +118,39 @@ dim(cells_numeric)
 Let's do a speed test using the 56 numeric columns from the `cells` dataset (which means `r choose(56, 2)` pairwise combinations or `r 56*55` permutations) imported from `{modeltime}`.
 
 ```{r}
+library(corrr)
+if (!requireNamespace("dplyover")) devtools::install_github('TimTeaFan/dplyover')
+library(dplyover)
+
 set.seed(123)
 
 microbenchmark::microbenchmark(
   cor = cor(cells_numeric),
-  correlate = corrr::correlate(cells_numeric),
-  colpair_map = corrr::colpair_map(cells_numeric, cor),
+  correlate = correlate(cells_numeric),
+  colpair_map = colpair_map(cells_numeric, cor),
   pairwise = summarise(cells_numeric, pairwise(where(is.numeric), cor, .is_commutative = TRUE)),
+  dplyover = summarise(cells_numeric, across2x(where(is.numeric), where(is.numeric), cor, .comb = "minimal")),
   times = 10L,
   unit = "ms")
 ```
 
-The `stats::cor()` and `corrr::correlate()` approaches are many times faster than using `pairwise()`. However `pairwise()` still only takes about one fifth of a second to calculate 1540 correlations in this case. Hence on relatively constrained problems pairwise() is still quite usable. (Though there are many cases where you should go for a matrix based solution.)
+The `stats::cor()` and `corrr::correlate()` approaches are many times faster than using `pairwise()`. However `pairwise()` still only takes about one fifth of a second to calculate 1540 correlations in this case. Hence on relatively constrained problems `pairwise()` is still quite usable. (Though there are many cases where you should go for a matrix based solution.)
 
-`pairwise()` seems to be faster than `corrr::colpair_map()` (a more apples-to-apples comparison as both can handle arbitrary functions), though much of this speed difference goes away when `.is_commutative = FALSE`.
+`pairwise()` seems to be faster than `corrr::colpair_map()` (a more apples-to-apples comparison as both can handle arbitrary functions), though much of this speed difference goes away when `.is_commutative = FALSE`. 
+
+`pairwise()` (at the moment) seems to also be faster than running the equivalent operation with `dplyover::across2x()`.
+
+<details style="margin-bottom:10px;">
+<summary>
+Session info
+</summary>
+
+```{r}
+sessionInfo()
+```
+
+</details>
 
 # Limitations
 
-See issue [#1](https://github.com/brshallo/pwiser/issues/1) for a little on limitations in current set-up.
+See issue [#1](https://github.com/brshallo/pwiser/issues/1) for notes on limitations in current set-up.
