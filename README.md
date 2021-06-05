@@ -132,14 +132,15 @@ for a few cataloged tweets on these approaches.)
 The novelty of `pwiser::pairwise()` is its integration in both mutating
 and summarising verbs in `{dplyr}`.
 
-**Identified after publishing {pwiser}:**
+### `dplyover`
 
-The [dplyover](https://github.com/TimTeaFan/dplyover) package is a more
-mature package that also offers a wide range of extensions on `across()`
-for iteration problems. `dplyover::across2()` can be used to do
-essentially the same thing as `pairwise()`. We are currently reviewing
-whether to mark {pwiser} as superseded so we can point people to
-{dplyover}.
+The [dplyover](https://github.com/TimTeaFan/dplyover) package offers a
+wide range of extensions on `across()` for iteration problems (and was
+identified after sharing the initial version of `{pwiser}`).
+`dplyover::across2x()` can be used to do the same things as
+`pwiser::pairwise()`. As `{dplyover}` continues to mature its interface
+and improve its performance, we may eventually mark `{pwiser}` as
+superseded.
 
 ## Computation Speed
 
@@ -172,32 +173,39 @@ dataset (which means 1540 pairwise combinations or 3080 permutations)
 imported from `{modeltime}`.
 
 ``` r
+library(corrr)
+if (!requireNamespace("dplyover")) devtools::install_github('TimTeaFan/dplyover')
+library(dplyover)
+
 set.seed(123)
 
 microbenchmark::microbenchmark(
   cor = cor(cells_numeric),
-  correlate = corrr::correlate(cells_numeric),
-  colpair_map = corrr::colpair_map(cells_numeric, cor),
+  correlate = correlate(cells_numeric),
+  colpair_map = colpair_map(cells_numeric, cor),
   pairwise = summarise(cells_numeric, pairwise(where(is.numeric), cor, .is_commutative = TRUE)),
+  dplyover = summarise(cells_numeric, across2x(where(is.numeric), where(is.numeric), cor, .comb = "minimal")),
   times = 10L,
   unit = "ms")
 #> Unit: milliseconds
-#>         expr        min         lq       mean     median         uq        max
-#>          cor   5.224201   5.611702   6.074961   6.149051   6.331702   6.862901
-#>    correlate  41.888002  44.783101  49.197801  46.816001  48.088402  73.147801
-#>  colpair_map 653.476401 665.239601 694.533231 681.804551 698.149301 822.678301
-#>     pairwise 236.102701 253.147802 269.404431 268.679200 291.609801 300.210800
+#>         expr       min        lq       mean     median        uq       max
+#>          cor    5.0229    5.1667    5.38959    5.30345    5.5008    5.9832
+#>    correlate   41.7989   44.2974   50.43496   45.64110   49.7036   78.9423
+#>  colpair_map  629.2201  679.8760  722.77073  733.22545  762.8037  788.9171
+#>     pairwise  228.8138  234.7653  287.11852  260.42045  326.8639  466.1481
+#>     dplyover 1393.9595 1531.9376 1821.72660 1647.67720 2098.0986 2663.2241
 #>  neval  cld
 #>     10 a   
+#>     10 ab  
+#>     10   c 
 #>     10  b  
 #>     10    d
-#>     10   c
 ```
 
 The `stats::cor()` and `corrr::correlate()` approaches are many times
 faster than using `pairwise()`. However `pairwise()` still only takes
 about one fifth of a second to calculate 1540 correlations in this case.
-Hence on relatively constrained problems pairwise() is still quite
+Hence on relatively constrained problems `pairwise()` is still quite
 usable. (Though there are many cases where you should go for a matrix
 based solution.)
 
@@ -206,7 +214,91 @@ apples-to-apples comparison as both can handle arbitrary functions),
 though much of this speed difference goes away when
 `.is_commutative = FALSE`.
 
+`pairwise()` (at the moment) seems to also be faster than running the
+equivalent operation with `dplyover::across2x()`.
+
+<details style="margin-bottom:10px;">
+<summary>
+Session info
+</summary>
+
+``` r
+sessioninfo::session_info()
+#> - Session info ---------------------------------------------------------------
+#>  setting  value                       
+#>  version  R version 3.5.1 (2018-07-02)
+#>  os       Windows 10 x64              
+#>  system   x86_64, mingw32             
+#>  ui       RTerm                       
+#>  language (EN)                        
+#>  collate  English_United States.1252  
+#>  ctype    English_United States.1252  
+#>  tz       America/New_York            
+#>  date     2021-06-04                  
+#> 
+#> - Packages -------------------------------------------------------------------
+#>  package        * version    date       lib source                             
+#>  assertthat       0.2.1      2019-03-21 [1] CRAN (R 3.5.3)                     
+#>  cli              2.5.0      2021-04-26 [1] CRAN (R 3.5.1)                     
+#>  codetools        0.2-15     2016-10-05 [2] CRAN (R 3.5.1)                     
+#>  colorspace       2.0-1      2021-05-04 [1] CRAN (R 3.5.1)                     
+#>  corrr          * 0.4.3      2020-11-24 [1] CRAN (R 3.5.1)                     
+#>  crayon           1.4.1      2021-02-08 [1] CRAN (R 3.5.1)                     
+#>  DBI              1.1.1      2021-01-15 [1] CRAN (R 3.5.1)                     
+#>  digest           0.6.27     2020-10-24 [1] CRAN (R 3.5.1)                     
+#>  dplyover       * 0.0.8.9000 2021-06-05 [1] Github (TimTeaFan/dplyover@b6a48fb)
+#>  dplyr          * 1.0.6      2021-05-05 [1] CRAN (R 3.5.1)                     
+#>  ellipsis         0.3.2      2021-04-29 [1] CRAN (R 3.5.1)                     
+#>  evaluate         0.14       2019-05-28 [1] CRAN (R 3.5.3)                     
+#>  fansi            0.5.0      2021-05-25 [1] CRAN (R 3.5.1)                     
+#>  generics         0.1.0      2020-10-31 [1] CRAN (R 3.5.1)                     
+#>  ggplot2          3.3.3      2020-12-30 [1] CRAN (R 3.5.1)                     
+#>  glue             1.4.2      2020-08-27 [1] CRAN (R 3.5.1)                     
+#>  gtable           0.3.0      2019-03-25 [1] CRAN (R 3.5.3)                     
+#>  htmltools        0.5.1.1    2021-01-22 [1] CRAN (R 3.5.1)                     
+#>  knitr            1.33       2021-04-24 [1] CRAN (R 3.5.1)                     
+#>  lattice          0.20-35    2017-03-25 [2] CRAN (R 3.5.1)                     
+#>  lifecycle        1.0.0      2021-02-15 [1] CRAN (R 3.5.1)                     
+#>  magrittr         2.0.1      2020-11-17 [1] CRAN (R 3.5.1)                     
+#>  MASS             7.3-50     2018-04-30 [2] CRAN (R 3.5.1)                     
+#>  Matrix           1.2-14     2018-04-13 [1] CRAN (R 3.5.1)                     
+#>  microbenchmark   1.4-7      2019-09-24 [1] CRAN (R 3.5.3)                     
+#>  modeldata      * 0.1.0      2020-10-22 [1] CRAN (R 3.5.1)                     
+#>  multcomp         1.4-17     2021-04-29 [1] CRAN (R 3.5.1)                     
+#>  munsell          0.5.0      2018-06-12 [1] CRAN (R 3.5.1)                     
+#>  mvtnorm          1.1-1      2020-06-09 [1] CRAN (R 3.5.1)                     
+#>  palmerpenguins * 0.1.0      2020-07-23 [1] CRAN (R 3.5.1)                     
+#>  pillar           1.6.1      2021-05-16 [1] CRAN (R 3.5.1)                     
+#>  pkgconfig        2.0.3      2019-09-22 [1] CRAN (R 3.5.3)                     
+#>  purrr            0.3.4      2020-04-17 [1] CRAN (R 3.5.3)                     
+#>  pwiser         * 0.0.1.9000 2021-05-19 [1] Github (brshallo/pwiser@3131adb)   
+#>  R6               2.5.0      2020-10-28 [1] CRAN (R 3.5.1)                     
+#>  rlang            0.4.11     2021-04-30 [1] CRAN (R 3.5.1)                     
+#>  rmarkdown        2.8        2021-05-07 [1] CRAN (R 3.5.1)                     
+#>  rstudioapi       0.13       2020-11-12 [1] CRAN (R 3.5.1)                     
+#>  sandwich         3.0-1      2021-05-18 [1] CRAN (R 3.5.1)                     
+#>  scales           1.1.1      2020-05-11 [1] CRAN (R 3.5.1)                     
+#>  sessioninfo      1.1.1      2018-11-05 [1] CRAN (R 3.5.2)                     
+#>  stringi          1.6.2      2021-05-17 [1] CRAN (R 3.5.1)                     
+#>  stringr          1.4.0      2019-02-10 [1] CRAN (R 3.5.3)                     
+#>  survival         3.1-12     2020-04-10 [1] CRAN (R 3.5.3)                     
+#>  TH.data          1.0-10     2019-01-21 [1] CRAN (R 3.5.3)                     
+#>  tibble           3.1.2      2021-05-16 [1] CRAN (R 3.5.1)                     
+#>  tidyselect       1.1.1      2021-04-30 [1] CRAN (R 3.5.1)                     
+#>  utf8             1.2.1      2021-03-12 [1] CRAN (R 3.5.1)                     
+#>  vctrs            0.3.8      2021-04-29 [1] CRAN (R 3.5.1)                     
+#>  withr            2.4.2      2021-04-18 [1] CRAN (R 3.5.1)                     
+#>  xfun             0.23       2021-05-15 [1] CRAN (R 3.5.1)                     
+#>  yaml             2.2.1      2020-02-01 [1] CRAN (R 3.5.3)                     
+#>  zoo              1.8-9      2021-03-09 [1] CRAN (R 3.5.1)                     
+#> 
+#> [1] C:/Users/BSHALLOW/Documents/R/win-library/3.5
+#> [2] C:/Program Files/R/R-3.5.1/library
+```
+
+</details>
+
 # Limitations
 
-See issue [\#1](https://github.com/brshallo/pwiser/issues/1) for a
-little on limitations in current set-up.
+See issue [\#1](https://github.com/brshallo/pwiser/issues/1) for notes
+on limitations in current set-up.
