@@ -9,6 +9,8 @@
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
+PACKAGE NO LONGER MAINTAINED. See `across2x()` in [dplyover](https://github.com/TimTeaFan/dplyover) for roughly equivalent functionality to that shown in README below.
+
 The goal of pwiser is to make applying arbitrary functions across
 combinations of columns within `{dplyr}` easy. Currently, the only
 function is `pairwise()`, which applies a function to all pairs of
